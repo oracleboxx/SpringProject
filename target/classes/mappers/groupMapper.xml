@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "kro.rubisco.dao.GroupDAO">
+
+<insert id ="create">insert into member_group(grouo_name)values(#{groupName}))</insert>
+
+<select id ="read" resultType ="GroupDTO">
+select* from meber_group where group_id = #{groupId}</select>
+
+<update id ="update">
+update member_group set group_name=#{groupName}, update_date= SYSDATE where group_id=#{groupId</update>
+
+<delete id = "delete"> delete from member_group where group_id = #{groupId}</delete>
+
+<select id ="listAll" resultType="GroupDTO">
+<![CDATA[ select * from member_group where group_id > 0 order by group_id desc ]]>
+</select>
+</mapper>

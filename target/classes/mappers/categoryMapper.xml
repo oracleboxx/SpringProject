@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace= "kro.rubisco.dao.CategoryDAO">
+
+
+<insert id ="create">
+insert into category (category) values (#{category})
+</insert>
+
+<select id = "read" resultType="CategoryDTO">
+select * from category where category_id = #{categoryId}
+</select>
+
+<update id ="update">
+update category set category = #{category}, update_date=SYSDATE
+where category_id = #{categoryId}
+</update>
+
+<delete id = "delete"> delete from category where category_id= #{categoryId}
+</delete>
+
+<select id ="listAll" resultType="CategoryDTO">
+<![CDATA[ select * from board where document_id > 0 order by document_id desc ]]>
+</select>	
+
+</mapper>

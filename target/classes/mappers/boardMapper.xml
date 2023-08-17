@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kro.rubisco.dao.BoardDAO">
+
+<resultMap id="getBoard" type="BoardDTO">
+    <id property="documentId" column="document_id" />
+    <result property="isNotice" column="is_notice" typeHandler="kro.rubisco.config.YNTypeHandler" />
+    <association property="category" column="category_id" select="getCategory" />
+    <association property="member" column="member_id" select="getMember" />
+    <association property="group" column="group_id" select="getGroup" />
+    <collection property="commentList" column="document_id" select="getComments" />
+</resultMap>
+
+<resultMap id="getBoardList" type="BoardDTO">
+    <id property="documentId" column="document_id" />
+    <result property="isNotice" column="is_notice" typeHandler="kro.rubisco.config.YNTypeHandler" />
+    <association property="category" column="category_id" select="getCategory" />
+    <association property="member" column="member_id" select="getMember" />
+    <association property="group" column="group_id" select="getGroup" />
+    <collection property="commentList" column="doucment_id" javaType="java.util.List" ofType="CommentDTO"/>
+</resultMap>
+
+<select id="getCategory" resultType="CategoryDTO">
+select * from category where category_id=#{categoryId}
+</select>
+
+<select id="getMember" resultType="MemberDTO">
+select * from member where member_id=#{memberId}
+</select>
+
+<select id="getGroup" resultType="GroupDTO">
+select * from member_group where group_id=#{groupId}
+</select>
+
+<select id="getComments" resultType="CommentDTO">
+select * from comments where document_id=#{documentId}
+</select>
+
+<insert id="create">
+insert into board (category_id, is_notice, title, content, member_id)
+values (#{categoryId}, #{isNotice, typeHandler=kro.rubisco.config.YNTypeHandler}, #{title}, #{content}, #{memberId})
+<selectKey keyProperty="documentId" resultType="Long" order="AFTER">
+select max(document_id) as document_id from board
+</selectKey>
+</insert>
+
+<select id="read" resultMap="getBoard"> 
+select * from board where document_id = #{documentId}
+</select>
+
+<update id="update">
+update board 
+set category_id=#{categoryId}, 
+    is_notice=#{isNotice, typeHandler=kro.rubisco.config.YNTypeHandler}, 
+    title=#{title}, 
+    content=#{content},  
+    update_date=SYSDATE
+where document_id = #{documentId}
+</update>
+
+<delete id="delete"> delete from board where document_id = #{documentId} </delete>
+
+<select id="listAll" resultMap="getBoardList">
+<![CDATA[select * 
+from (
+    select rownum num, b.*
+    from (
+        select b.* from board b
+        inner join member m on b.member_id = m.member_id ]]>
+        
+       <if test="search.target neq null and search.keyword neq null">
+    <where>
+        <choose>
+            <when test="search.target.toString() eq 'title'">
+                <![CDATA[ 
+                    and b.title like '%'||#{search.keyword}||'%'
+                ]]>
+            </when>
+            <when test="search.target.toString() eq 'content'">
+                <![CDATA[ 
+                    and b.content like '%'||#{search.keyword}||'%'
+                ]]>
+            </when>
+            <when test="search.target.toString() eq 'titleAndContent'">
+                <![CDATA[ 
+                    and b.title like '%'||#{search.keyword}||'%'
+                    or b.content like '%'||#{search.keyword}||'%'
+                ]]>
+            </when>
+            <when test="search.target.toString() eq 'nickName'">
+                <![CDATA[ 
+                    and m.nick_name like '%'||#{search.keyword}||'%'
+                ]]>
+            </when>
+        </choose>
+    </where>
+</if>
+<![CDATA[
+        order by b.document_id desc
+    ) b
+    WHERE rownum <= #{board.last}
+)
+where num >= #{board.first}
+]]> 
+</select>
+
+
+
+<select id="getCount" resultType="long">
+select count(*) from board where document_id > 0
+</select>
+</mapper>
